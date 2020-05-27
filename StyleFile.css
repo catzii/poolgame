@@ -1,0 +1,14 @@
+body {
+    background:#dddddd;
+}
+#canvas {
+    margin: 10px;
+    padding: 1px;
+    background: #d5edeb;
+    border: thin outset #aaaaaa;
+}
+aside {
+    font-family: Verdana;
+    font-size: 12px;
+    color: firebrick;
+}
