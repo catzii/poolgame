@@ -7,14 +7,47 @@ window.onload = function () {
         mesaImg = new Image(),
         taco1Img = new Image(),
         taco2Img = new Image(),
-        taco1 = new Taco(),
-        taco2 = new Taco(),
-        balls = [],
-        easing = 0.05,
         numBalls = 16,
-        bounce = -1.0,
-        friction = 0.01;
-
+        redBalls = [
+            new Ball(1046, 380, 0xe00000),//3
+            new Ball(1080, 321, 0xe00000),//4
+            new Ball(1116, 340, 0xe00000),//8
+            new Ball(1116, 418, 0xe00000),//10
+            new Ball(1152, 282, 0xe00000),//11
+            new Ball(1152, 321, 0xe00000),//12
+            new Ball(1152, 399, 0xe00000)//14
+        ],
+        yellowBalls = [
+            new Ball(1012, 360, 0xfcba03),//1
+            new Ball(1046, 340, 0xfcba03),//2
+            new Ball(1080, 399, 0xfcba03),//6
+            new Ball(1116, 301, 0xfcba03),//7
+            new Ball(1116, 380, 0xfcba03),//9
+            new Ball(1152, 360, 0xfcba03),//13
+            new Ball(1152, 438, 0xfcba03)//15
+        ],
+        whiteBall = new Ball(358, 360, 0xffffff),
+        blackBall = new Ball(1080, 360, 0x000000),
+        balls = [
+            yellowBalls[0],
+            yellowBalls[1],
+            redBalls[0],
+            redBalls[1],
+            blackBall,
+            yellowBalls[2],
+            yellowBalls[3],
+            redBalls[2],
+            yellowBalls[4],
+            redBalls[3],
+            redBalls[4],
+            redBalls[5],
+            yellowBalls[5],
+            redBalls[6],
+            yellowBalls[6],
+            whiteBall
+        ],
+        taco = new Taco(358, 360, balls[balls.length - 1].shoot.bind(balls[balls.length - 1]));
+    //TODO: to change player
     let currentPlayerPlaying = 0;
 
     // Imagens dos tacos
@@ -24,25 +57,6 @@ window.onload = function () {
     // imagem de fundo
     mesaImg.src = './assets/images/pool.png';
 
-    // TODO
-    /** 
-     * Este loop cria todas as bolas do jogo
-     * Index 0 corresponte à bola branca
-     * Index 1 corresponde à bola preta
-     * Index 2 ao 8 correspondem as bolas com risca
-     * Index 9 ao 15 correspondem as bolas sem risca
-     */
-    for (var radius, ball, i = 0; i < numBalls; i++) {
-        radius = Math.random() * 20 + 15;
-        ball = new Ball(radius, Math.random() * 0xffffff);
-        ball.mass = radius;
-        ball.x = Math.random() * canvas.width;
-        ball.y = Math.random() * canvas.height;
-        ball.vx = Math.random() * 10 - 5;
-        ball.vy = Math.random() * 10 - 5;
-        balls.push(ball);
-    }
-
     function rotate(x, y, sin, cos, reverse) {
         return {
             x: (reverse) ? (x * cos + y * sin) : (x * cos - y * sin),
@@ -50,6 +64,8 @@ window.onload = function () {
         };
     }
 
+    // TODO:(Remove this) Parte do exemplo da aula Anima/07-Colisao de Bolas/06-multi-billiard-2.html
+    // Trata das colisões entre as bolas
     function checkCollision(ball0, ball1) {
         var dx = ball1.x - ball0.x,
             dy = ball1.y - ball0.y,
@@ -96,43 +112,12 @@ window.onload = function () {
         }
     }
 
-    //TODO: Criar paredes para o pool
-    function checkWalls(ball) {
-        if (ball.x + ball.radius > canvas.width) {
-            ball.x = canvas.width - ball.radius;
-            ball.vx *= bounce;
-        } else if (ball.x - ball.radius < 0) {
-            ball.x = ball.radius;
-            ball.vx *= bounce;
-        }
-        if (ball.y + ball.radius > canvas.height) {
-            ball.y = canvas.height - ball.radius;
-            ball.vy *= bounce;
-        } else if (ball.y - ball.radius < 0) {
-            ball.y = ball.radius;
-            ball.vy *= bounce;
-        }
+    function draw(ball) {
+        ball.draw(context);
     }
 
     function move(ball) {
-        var speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy),
-            angle = Math.atan2(ball.vy, ball.vx);
-
-        if (speed > friction) {
-            speed -= friction;
-        } else {
-            speed = 0;
-        }
-        
-        ball.vx = Math.cos(angle) * speed;
-        ball.vy = Math.sin(angle) * speed;
-        ball.x += ball.vx;
-        ball.y += ball.vy;
-        checkWalls(ball);
-    }
-
-    function draw(ball) {
-        ball.draw(context);
+        ball.move();
     }
 
     (function drawFrame() {
@@ -140,13 +125,6 @@ window.onload = function () {
         // context.clearRect(0, 0, canvas.width, canvas.height);
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(mesaImg, 0, 0, canvas.width, canvas.height);
-        if (currentPlayerPlaying === 0) {
-            taco1.update(mouse);
-            taco1.draw(context, taco1Img);
-        } else {
-            taco2.update(mouse);
-            taco2.draw(context, taco2Img);
-        }
 
         balls.forEach(move);
         for (var ballA, i = 0, len = numBalls - 1; i < len; i++) {
@@ -157,6 +135,17 @@ window.onload = function () {
             }
         }
         balls.forEach(draw);
+        taco.update(mouse);
+        context.save();
+        const wbx = balls[balls.length - 1].x,
+            wby = balls[balls.length - 1].y;
+        taco.x = wbx;
+        taco.y = wby;
+
+        context.translate(wbx, wby);
+        context.rotate(taco.rotation)
+        taco.draw(context, currentPlayerPlaying === 0 ? taco1Img : taco2Img, taco.power, wbx, wby);
+        context.restore();
     }());
 
 }
