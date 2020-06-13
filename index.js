@@ -47,6 +47,22 @@ window.onload = function () {
             whiteBall
         ],
         taco = new Taco(358, 360, balls[balls.length - 1].shoot.bind(balls[balls.length - 1]));
+    holes = [
+        new Hole(85, 82),
+        new Hole(640, 50),
+        new Hole(1200, 81),
+        new Hole(85, 638),
+        new Hole(640, 667),
+        new Hole(1198, 638),
+    ];
+    lines = [
+        new Line(0, 0, 468, 0),
+        new Line(0, 0, 480, 0),
+        new Line(0, 0, 459, 0),
+        new Line(0, 0, 480, 0),
+        new Line(0, 0, 468, 0),
+        new Line(0, 0, 459, 0),
+    ];
     //TODO: to change player
     let currentPlayerPlaying = 0;
 
@@ -56,6 +72,32 @@ window.onload = function () {
 
     // imagem de fundo
     mesaImg.src = './assets/images/pool.png';
+
+
+    // Define as posições das linhas
+    lines[0].x = 601;
+    lines[0].y = 82;
+    lines[0].rotation = 180 * Math.PI / 180;
+
+    lines[1].x = 1159;
+    lines[1].y = 82;
+    lines[1].rotation = 180 * Math.PI / 180;
+
+    lines[2].x = 1199;
+    lines[2].y = 590;
+    lines[2].rotation = 270 * Math.PI / 180;
+
+    lines[3].x = 679;
+    lines[3].y = 640;
+    lines[3].rotation = 0 * Math.PI / 180;
+
+    lines[4].x = 133;
+    lines[4].y = 640;
+    lines[4].rotation = 0 * Math.PI / 180;
+
+    lines[5].x = 82;
+    lines[5].y = 131;
+    lines[5].rotation = 90 * Math.PI / 180;
 
     function rotate(x, y, sin, cos, reverse) {
         return {
@@ -117,7 +159,8 @@ window.onload = function () {
     }
 
     function move(ball) {
-        ball.move();
+        ball.move(lines);
+        lines.forEach(line => line.checkLine(ball))
     }
 
     (function drawFrame() {
@@ -126,26 +169,54 @@ window.onload = function () {
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(mesaImg, 0, 0, canvas.width, canvas.height);
 
+        // TODO: Comentar este loop para remover as linhas
+        // lines.forEach(line => line.draw(context))
+
+        // Se marcar a bola branca, a bola é reposta na sua posição inicial
+        if (!whiteBall.visible) {
+            whiteBall.x = 358;
+            whiteBall.y = 360;
+            whiteBall.vx = 0;
+            whiteBall.vy = 0;
+            whiteBall.visible = true;
+        }
         balls.forEach(move);
-        for (var ballA, i = 0, len = numBalls - 1; i < len; i++) {
+        for (var ballA, i = 0, len = numBalls; i < len; i++) {
             ballA = balls[i];
+            if (!ballA.visible) continue;
             for (var ballB, j = i + 1; j < numBalls; j++) {
                 ballB = balls[j];
+                // Verifica se as bolas estão em jogo, se não estiverem não verifica a colisão
+                if (!ballB.visible) continue;
                 checkCollision(ballA, ballB);
             }
-        }
-        balls.forEach(draw);
-        taco.update(mouse);
-        context.save();
-        const wbx = balls[balls.length - 1].x,
-            wby = balls[balls.length - 1].y;
-        taco.x = wbx;
-        taco.y = wby;
+            for (var hole, k = 0; k < holes.length; k++) {
+                hole = holes[k];
+                if (hole.checkhole(ballA)) ballA.enter();
 
-        context.translate(wbx, wby);
-        context.rotate(taco.rotation)
-        taco.draw(context, currentPlayerPlaying === 0 ? taco1Img : taco2Img, taco.power, wbx, wby);
-        context.restore();
+                // Isto ajuda a visualizar a localização dos buracos
+                // TODO Comentar esta linha
+                // hole.draw(context);
+            }
+        }
+        // console.log(whiteBall.x)
+        balls.forEach(draw);
+        
+        // Faz draw do taco apenas quando a bola branca estiver parada
+        if (whiteBall.vx === 0 && whiteBall.vy === 0) {
+            taco.update(mouse);
+            context.save();
+            const wbx = balls[balls.length - 1].x,
+                wby = balls[balls.length - 1].y;
+            taco.x = wbx;
+            taco.y = wby;
+
+            context.translate(wbx, wby);
+            context.rotate(taco.rotation);
+
+            taco.draw(context, currentPlayerPlaying === 0 ? taco1Img : taco2Img, taco.power, wbx, wby);
+            context.restore();
+        }
     }());
 
 }
