@@ -186,13 +186,14 @@ window.onload = function () {
         // lines.forEach(line => line.draw(context))
 
         // Se marcar a bola branca, a bola é reposta na sua posição inicial
-        if (!whiteBall.visible) {
+        if (!whiteBall.visible) {   
             whiteBall.x = 358;
             whiteBall.y = 360;
             whiteBall.vx = 0;
             whiteBall.vy = 0;
             whiteBall.visible = true;
-            changeplayer();
+           
+            
         }
 
         if (!blackBall.visible) {
@@ -201,7 +202,7 @@ window.onload = function () {
             blackBall.vx = 0;
             blackBall.vy = 0;
             blackBall.visible = true;
-            changeplayer();
+          
         }
         balls.forEach(move);
         for (var ballA, i = 0, len = numBalls; i < len; i++) {
