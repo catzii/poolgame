@@ -162,6 +162,19 @@ window.onload = function () {
         ball.move(lines);
         lines.forEach(line => line.checkLine(ball))
     }
+    //MUDA o jogador
+    function changeplayer(){
+        if (currentPlayerPlaying===0){
+             currentPlayerPlaying=1;
+
+        }
+        else{
+             currentPlayerPlaying=0;
+        }
+    }
+
+
+        
 
     (function drawFrame() {
         window.requestAnimationFrame(drawFrame, canvas);
@@ -179,33 +192,59 @@ window.onload = function () {
             whiteBall.vx = 0;
             whiteBall.vy = 0;
             whiteBall.visible = true;
+            changeplayer();
+        }
+
+        if (!blackBall.visible) {
+            blackBall.x = 358;
+            blackBall.y = 360;
+            blackBall.vx = 0;
+            blackBall.vy = 0;
+            blackBall.visible = true;
+            changeplayer();
         }
         balls.forEach(move);
         for (var ballA, i = 0, len = numBalls; i < len; i++) {
             ballA = balls[i];
+            
             if (!ballA.visible) continue;
+
+           
+          
             for (var ballB, j = i + 1; j < numBalls; j++) {
                 ballB = balls[j];
+              
                 // Verifica se as bolas estão em jogo, se não estiverem não verifica a colisão
                 if (!ballB.visible) continue;
                 checkCollision(ballA, ballB);
+               
             }
             for (var hole, k = 0; k < holes.length; k++) {
                 hole = holes[k];
-                if (hole.checkhole(ballA)) ballA.enter();
+                if (hole.checkhole(ballA))ballA.enter();
+                else{
+                    changeplayer();
+                }
+
+                
 
                 // Isto ajuda a visualizar a localização dos buracos
                 // TODO Comentar esta linha
                 // hole.draw(context);
             }
+
+        
+            
         }
         // console.log(whiteBall.x)
         balls.forEach(draw);
         
         // Faz draw do taco apenas quando a bola branca estiver parada
         if (whiteBall.vx === 0 && whiteBall.vy === 0) {
+            
             taco.update(mouse);
             context.save();
+           
             const wbx = balls[balls.length - 1].x,
                 wby = balls[balls.length - 1].y;
             taco.x = wbx;
